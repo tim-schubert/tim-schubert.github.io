@@ -172,7 +172,8 @@
              src="assets/me.jpg"
              alt="Tim Schubert"
              loading="eager"
-             style="display:block;width:100%;height:100%;object-fit:cover;border:0" />
+             style="display:block;width:100%;height:100%;object-fit:cover;border:0"
+             onerror="window.__avatarFallback && window.__avatarFallback(this)" />
       </div>
     </header>
 
@@ -422,5 +423,40 @@
       });
     })();
   </script>
+
+<script>
+  (function(){
+    const CANDIDATES = [
+      'assets/me.jpg',
+      'assets/me.JPG',
+      'assets/Me.jpg',
+      'assets/ME.jpg',
+      'assets/me.jpeg',
+      'assets/me.PNG',
+      'assets/me.png'
+    ];
+    window.__avatarFallback = function(img){
+      // Try next candidate or fall back to SVG initials.
+      const tried = img.getAttribute('data-tried') ? img.getAttribute('data-tried').split('|') : [];
+      const next = CANDIDATES.find(u => !tried.includes(u));
+      if(next){
+        tried.push(next);
+        img.setAttribute('data-tried', tried.join('|'));
+        img.src = next;
+        return;
+      }
+      // Final fallback: inline SVG with initials
+      const initials = 'TS';
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
+          <rect width="100%" height="100%" fill="#e5e5e5"/>
+          <circle cx="256" cy="256" r="240" fill="#d1d5db" stroke="#0a0a0a" stroke-width="10"/>
+          <text x="50%" y="54%" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="180" font-weight="800" fill="#0a0a0a">${initials}</text>
+        </svg>`;
+      const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      img.src = dataUrl;
+    };
+  })();
+</script>
 </body>
 </html>
