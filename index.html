@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en" data-theme="neo">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tim Schubert</title>
+  <meta name="description" content="Tim Schubert - MD/PhD Student. Researcher." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    :root{
+      --bg:#fefae0;
+      --panel:#ffffff;
+      --text:#0a0a0a;
+      --muted:#4b5563;
+      --border:#0a0a0a;
+      --chip:#ffffff;
+      --shadow:8px 8px 0 #0a0a0a;
+      --edge:#0a0a0a;
+
+      --dev:#0ea5e9;
+      --deg:#10b981;
+      --ml:#f59e0b;
+
+      --devTint: rgba(14,165,233,.12);
+      --degTint: rgba(16,185,129,.12);
+      --mlTint:  rgba(245,158,11,.16);
+      --neutralTint: rgba(0,0,0,.04);
+
+      --radius:12px; --panel-radius:14px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+
+    nav{
+      position:sticky;top:0;z-index:9;background:#fff;
+      border-bottom:2px solid var(--border);
+    }
+    nav .navwrap{max-width:1080px;margin:0 auto;display:flex;gap:10px;align-items:center;padding:10px 20px}
+    nav a{
+      font-size:14px;color:var(--text);
+      padding:8px 12px;border-radius:12px;
+      text-decoration:none;border:none;background:transparent;
+      box-shadow:none;transition:transform .15s ease, background-color .15s ease;
+    }
+    nav a:hover{
+      background:var(--chip);
+      transform:translate(-1px,-1px);
+    }
+    .spacer{flex:1}
+    .btn{display:inline-flex;gap:8px;align-items:center;padding:8px 14px;border-radius:12px;border:2px solid var(--border);background:var(--chip);color:var(--text);font-weight:600;box-shadow:2px 2px 0 #0a0a0a;text-decoration:none;transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease; cursor:pointer;}
+    .btn:hover{
+      transform:translate(-1px,-1px);
+      box-shadow:3px 3px 0 #0a0a0a;
+    }
+    .btn .ico{width:16px;height:16px;display:inline-block}
+
+    header{
+      margin:26px 0 12px;
+      display:grid;grid-template-columns:1fr 180px;gap:28px;align-items:center;
+    }
+    .hero-text h1{
+      font-size:clamp(28px, 6vw, 44px);line-height:1.0;margin:0 0 8px;font-weight:800;
+      letter-spacing:.2px;
+    }
+    .hero-text .tagline{
+      color:var(--muted);font-size:18px;margin:0 0 14px;
+    }
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+    .chip{
+      border:2px solid var(--border);background:#fff;padding:6px 12px;border-radius:999px;
+      font-size:13px;color:var(--text);font-weight:600;box-shadow:4px 4px 0 #0a0a0a;
+    }
+
+    .avatarWrap{
+      justify-self:end;
+      width:clamp(110px, 16vw, 180px);height:clamp(110px, 16vw, 180px);border-radius:50%;
+      border:4px solid var(--border);overflow:hidden;background:#ddd;
+      box-shadow:var(--shadow);
+    }
+    .avatarWrap img{width:100%;height:100%;object-fit:cover;display:block}
+
+    @media (max-width:820px){
+      header{grid-template-columns:1fr auto;gap:16px;align-items:center}
+      .avatarWrap{justify-self:end;width:clamp(88px,24vw,140px);height:clamp(88px,24vw,140px)}
+      .hero-text h1{font-size:clamp(28px,8vw,36px)}
+    }
+
+    section{
+      margin-top:28px;background:var(--panel);
+      border:2px solid var(--border);border-radius:var(--panel-radius);
+      padding:24px;box-shadow:var(--shadow);scroll-margin-top:72px;
+    }
+    section h2{margin:4px 0 12px;font-size:22px}
+    .section-intro{margin:0 0 18px;color:var(--muted);font-size:14px}
+    ul.clean{list-style:none;margin:0;padding:0}
+    .item{padding:14px 0;border-bottom:2px dashed var(--border);opacity:.9}
+    .item:last-child{border-bottom:0}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:36px;text-align:center;color:var(--muted);font-size:13px}
+    .section-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+    #research{position:relative;padding:36px 24px}
+    .themes{display:grid;gap:24px;margin-top:10px}
+    @media(min-width:900px){.themes{grid-template-columns:repeat(3,1fr)}}
+    #research .card{
+      border:2px solid var(--border);border-radius:14px;background:var(--panel);
+      padding:18px;box-shadow:none;
+    }
+    #research .themes .card:nth-child(1){background:var(--devTint)}
+    #research .themes .card:nth-child(2){background:var(--degTint)}
+    #research .themes .card:nth-child(3){background:var(--mlTint)}
+    #research .card h3{margin:6px 0 6px;font-size:18px}
+    #research .card p{margin:0}
+
+    #research .graphCard{
+      position:relative;background:var(--neutralTint);
+      border:2px solid var(--border);border-radius:14px;box-shadow:none;
+      padding:0;overflow:hidden;margin-top:24px
+    }
+    #graphsvg{width:100%;height:600px;display:block}
+    .tooltip{
+      position:absolute;pointer-events:none;background:#ffffff;border:2px solid var(--border);
+      padding:8px 10px;border-radius:10px;box-shadow:none;
+      display:none;max-width:320px;font-size:13px;color:var(--text);z-index:5
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="navwrap">
+      <a href="#about">About</a>
+      <a href="#now">Projects</a>
+      <a href="#research">Research</a>
+      <div class="spacer"></div>
+      <!-- Icons right -->
+      <a class="btn" href="mailto:tim.schubert.public@gmail.com" aria-label="Email">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="M22 7l-10 7L2 7"/></svg>
+      </a>
+      <a class="btn" href="https://github.com/tim-schubert" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.1c-3.22.7-3.9-1.39-3.9-1.39-.53-1.35-1.3-1.7-1.3-1.7-1.06-.73.08-.72.08-.72 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.39.97.11-.76.41-1.27.75-1.56-2.57-.29-5.27-1.29-5.27-5.73 0-1.27.46-2.3 1.2-3.12-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.2 1.19a11.1 11.1 0 0 1 5.82 0c2.22-1.5 3.2-1.19 3.2-1.19.63 1.59.24 2.76.12 3.05.75.82 1.2 1.85 1.2 3.12 0 4.45-2.71 5.44-5.29 5.72.42.36.8 1.07.8 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+      </a>
+      <a class="btn" href="https://linkedin.com/in/schubert-tim" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.06h.05c.53-1 1.83-2.06 3.76-2.06 4.02 0 4.76 2.65 4.76 6.09V23h-4V15.2c0-1.86-.03-4.26-2.59-4.26-2.6 0-3 2.03-3 4.12V23h-4V8z"/></svg>
+      </a>
+      <a class="btn" href="https://scholar.google.com/citations?hl=en&user=jDwhzckAAAAJ" target="_blank" rel="noopener" aria-label="Google Scholar">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c0 .6 2.7 2 6 2s6-1.4 6-2v-5"/>
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <header>
+      <div class="hero-text">
+        <h1>Tim Schubert</h1>
+        <p class="tagline">Hey! I'm Tim, an MD/PhD Student who is fascinated by brains, genes, and data.</p>
+        <div class="chips">
+          <span class="chip">Neuroscience</span>
+          <span class="chip">Genomics</span>
+          <span class="chip">Machine Learning</span>
+          <span class="chip">Computational Biology</span>
+        </div>
+      </div>
+      <div class="avatarWrap" aria-label="Profile photo">
+        <img src="https://drive.google.com/uc?export=view&id=1Og0VVjXrCZn3jZWBAsfdiVz_gHZEJwtZ" alt="Tim Schubert" onerror="this.onerror=null; this.src='assets/me.jpg';" />
+      </div>
+    </header>
+
+    <section id="about">
+      <h2>Some background</h2>
+      <p>I am deeply interested in people, life, and the world. My goal is to understand the brain and genes through science while making a positive impact in healthcare. I have research experience in neuroscience, genetics, machine learning, and computational biology across wet and dry lab techniques. 
+        My studies and research have brought me to many inspiring places with lovely people, including Heidelberg, Cambridge, Harvard, and MIT.</p>
+      <p>Outside of academia, I enjoy meaningful conversations, making artisanal coffee, playing the piano, working out, skiing, surfing, sailing, and podcasting. Please reach out, I'm happy to connect!</p>
+      <div style="margin-top:12px">
+        <a class="btn" href="https://drive.google.com/file/d/1-_XmiSy2AgiSycD63cUYtiYBYfBnch4H/preview" target="_blank" rel="noopener" aria-label="Open CV (PDF)">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a 2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+            <path d="M8 13h8M8 17h5"/>
+          </svg>
+          <span>CV</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="now">
+      <h2>Currently working on</h2>
+      <ul class="clean">
+        <li class="item"><b>Genetic variation influencing neurodevelopment and behavior</b> in Schaaf-Yang syndrome, an ultra-rare condition.</li>
+        <li class="item"><b>AI co-pilots for clinician scientists</b> that bring predictive modeling best practice to anyone's fingertips.</li>
+        <li class="item"><b>Cell-projected phenotypes</b> linking transcriptional and clinical heterogeneity in Alzheimer's disease.</li>
+        <li class="item"><b>Becoming a clinician scientist</b> in human genetics or neurology.</li>
+        <li class="item"><b>SITUS INVERSUS</b>, peer-teaching for medical students in podcast format.</li>
+        <li class="item"><b>Building a think-tank for reality-centric clinical AI</b> with the van der Schaar Lab.</li>
+        <li class="item"><b>Linear Algebra and philosophy</b> classes.</li>
+        <li class="item"><b>Learning how to sail</b> on the Charles River.</li>
+      </ul>
+      <div class="section-actions" aria-label="Computational projects">
+        <a class="btn" href="https://tim-schubert-mfap.share.connect.posit.cloud/" target="_blank" rel="noopener" aria-label="MfAP — Molecular feature Association Pipeline">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/>
+            <path d="M9 3v15M15 6v15"/>
+          </svg>
+          <span>MfAP (extracting DNA- and protein-level features for variants)</span>
+        </a>
+        <a class="btn" href="https://timschubert.shinyapps.io/SYS-Severity-Score-Calculator/" target="_blank" rel="noopener" aria-label="SYS Severity Score Calculator">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+            <path d="M7 7h10M7 12h10M7 17h4M13 17h4"/>
+          </svg>
+          <span>SYS Severity Score Calculator</span>
+        </a>
+        <a class="btn" href="https://github.com/vanderschaarlab/climb" target="_blank" rel="noopener" aria-label="CliMB — Predictive Modeling Partner">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 20l7-12 4 6 3-4 4 10H3z"/>
+            <path d="M10 8l2 3"/>
+          </svg>
+          <span>CliMB (AI-enabled Predictive Modeling Partner)</span>
+        </a>
+        <a class="btn" href="https://dervorklinikpodcast.de/" target="_blank" rel="noopener" aria-label="Situs Inversus — Der Vorklinik-Podcast">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M8 12a4 4 0 0 1 8 0"/>
+            <path d="M5 12a7 7 0 0 1 14 0"/>
+            <path d="M12 14v6"/>
+            <path d="M9 20h6"/>
+          </svg>
+          <span>Situs Inversus Podcast</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="research">
+      <h2>Research</h2>
+      <p class="section-intro">I have diverse interests and love interdisciplinary work. You can explore some of my research themes and the associated publications below.</p>
+
+      <div class="section-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <a class="btn" href="https://scholar.google.com/citations?hl=en&user=jDwhzckAAAAJ" target="_blank" rel="noopener" aria-label="Google Scholar">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5L2 9z"/><path d="M6 12v5c0 .6 2.7 2 6 2s6-1.4 6-2v-5"/></svg>
+          <span>Google Scholar</span>
+        </a>
+        <a class="btn" href="https://www.researchgate.net/profile/Tim-Schubert-11" target="_blank" rel="noopener" aria-label="ResearchGate">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><text x="8" y="16" font-size="8" font-family="Inter, Arial" fill="currentColor">RG</text></svg>
+          <span>ResearchGate</span>
+        </a>
+      </div>
+      <br>
+
+      <div class="themes">
+        <div class="card">
+          <h3>1. Neurodevelopment</h3>
+          <p class="small">How can we link genetic variation to behavioral phenotypes? Which pathomechanisms underpin neurodevelopmental disorders?</p>
+        </div>
+        <div class="card">
+          <h3>2. Neurodegeneration</h3>
+          <p class="small">How can we integrate multi-modal data sources to understand and treat Alzheimer's disease (AD)? How can we model inter- and intra-individual heterogeneity in disease progression? Can we find biomarkers of AD?</p>
+        </div>
+        <div class="card">
+          <h3>3. AI in Medicine</h3>
+          <p class="small">How can we use cutting-edge machine learning for timely diagnoses? How do we individualize diagnostic and treatment pathways? How do we ensure best practice in predictive modeling?</p>
+        </div>
+      </div>
+
+      <div class="graphCard">
+        <svg id="graphsvg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet"></svg>
+        <div id="tooltip" class="tooltip"></div>
+      </div>
+      <p class="small" style="margin-top:12px;">Something fun :) Click buttons above for my Google Scholar and ResearchGate profiles. <br>Drag nodes to explore papers. Hover to reveal titles. Click to open a paper in a new tab.</p>
+    </section>
+
+    <footer>©<span id="y"></span> Tim Schubert</footer>
+  </div>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // ------------------ Load research data (CSV) ------------------
+    const themeColor = {
+      neurodev: getComputedStyle(document.documentElement).getPropertyValue('--dev').trim(),
+      neurodeg: getComputedStyle(document.documentElement).getPropertyValue('--deg').trim(),
+      mlmed:    getComputedStyle(document.documentElement).getPropertyValue('--ml').trim()
+    };
+
+    async function loadFromCSV(){
+      const SHEET_ID = '1-8lNuUl9Fctp99U6mb2JrDR9Ct8Amf6TgmkyxhrJdRw';
+      const SHEET_NAME = 'papers-for-website'; // adjust if your tab name differs
+      const urls = [
+        // 1) Published-to-web CSV (requires File → Share → Publish to web)
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?output=csv`,
+        // 2) gviz CSV endpoint by sheet name (works when link is public)
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`,
+        // 3) export CSV of the first sheet (if public)
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`
+      ];
+
+      let lastErr = null;
+      for(const url of urls){
+        try{
+          const rows = await d3.csv(url);
+          if(rows && rows.length){
+            const themes = {};
+            rows.forEach(r => {
+              const id = (r.theme||'').trim();
+              if(!id) return;
+              themes[id] = themes[id] || { id, color: themeColor[id]||'#888', papers: [] };
+              const tags = (r.tags||'').split(';').map(s=>s.trim()).filter(Boolean);
+              themes[id].papers.push({ title: r.title?.trim(), url: r.url?.trim(), tags });
+            });
+            return { themes: Object.values(themes), source:url };
+          }
+        }catch(e){
+          lastErr = e;
+          console.error('CSV load failed for', url, e);
+        }
+      }
+      // If all attempts failed, surface a gentle message over the graph area
+      const svgEl = document.getElementById('graphsvg');
+      if(svgEl){
+        const warn = document.createElement('div');
+        warn.style.position = 'absolute';
+        warn.style.inset = '12px';
+        warn.style.border = '2px dashed var(--border)';
+        warn.style.borderRadius = '10px';
+        warn.style.display = 'flex';
+        warn.style.alignItems = 'center';
+        warn.style.justifyContent = 'center';
+        warn.style.fontSize = '14px';
+        warn.style.color = 'var(--muted)';
+        warn.style.background = 'rgba(255,255,255,0.5)';
+        warn.textContent = 'Could not load research data. Check Google Sheets “Publish to the web” or sharing settings.';
+        const holder = document.querySelector('#research .graphCard');
+        if(holder) holder.appendChild(warn);
+      }
+      return { themes: [], error:lastErr };
+    }
+
+    (async () => {
+      const RESEARCH = await loadFromCSV();
+      console.log('Loaded research source:', RESEARCH.source || '(none)');
+
+      const nodesData = [];
+      RESEARCH.themes.forEach(theme => {
+        theme.papers.forEach((p,idx)=> nodesData.push({ id: `${theme.id}_${idx}`, theme: theme.id, color: theme.color, title: p.title, url: p.url, tags: p.tags||[] }));
+      });
+
+      const linksData = [];
+      for(let i=0;i<nodesData.length;i++){
+        for(let j=i+1;j<nodesData.length;j++){
+          const a = nodesData[i], b = nodesData[j];
+          const overlap = a.tags.filter(t => b.tags.includes(t));
+          if(overlap.length){ linksData.push({ source:a.id, target:b.id, weight: overlap.length }); }
+        }
+      }
+
+      const degree = Object.fromEntries(nodesData.map(n=>[n.id,0]));
+      linksData.forEach(e=>{ degree[e.source]++; degree[e.target]++; });
+
+      // D3 render
+      const svg = d3.select('#graphsvg');
+      const g = svg.append('g');
+      const linkG = g.append('g').attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--edge').trim()).attr('stroke-opacity',0.6);
+      const nodeG = g.append('g');
+      const tooltip = document.getElementById('tooltip');
+      svg.call(d3.zoom().scaleExtent([0.6, 3]).on('zoom', (e)=>{ g.attr('transform', e.transform); }));
+
+      const sim = d3.forceSimulation(nodesData)
+        .force('link', d3.forceLink(linksData).id(d=>d.id).distance(d=>120 - 10*(d.weight||1)).strength(0.5))
+        .force('charge', d3.forceManyBody().strength(-140))
+        .force('center', d3.forceCenter(450,300))
+        .force('collision', d3.forceCollide().radius(d=> 16 + 5*Math.sqrt(degree[d.id]||0)).strength(0.9));
+
+      const links = linkG.selectAll('line').data(linksData).enter().append('line')
+        .attr('stroke-width', d=> 1.2 + Math.min(2, d.weight||1));
+
+      function drag(sim){
+        function dragstarted(event, d){ if(!event.active) sim.alphaTarget(0.2).restart(); d.fx = d.x; d.fy = d.y; }
+        function dragged(event, d){ d.fx = event.x; d.fy = event.y; }
+        function dragended(event, d){ if(!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }
+        return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
+      }
+
+      const nodes = nodeG.selectAll('circle').data(nodesData).enter().append('circle')
+        .attr('r', d=> 12 + 4*Math.sqrt(degree[d.id]||0))
+        .attr('fill', d=> d.color)
+        .attr('stroke', 'var(--border)')
+        .attr('stroke-width', 2)
+        .style('cursor','pointer')
+        .on('mouseover', (event, d)=>{
+          tooltip.style.display = 'block';
+          tooltip.textContent = d.title || 'Paper';
+          const rect0 = svg.node().getBoundingClientRect();
+          tooltip.style.left = (event.clientX - rect0.left + 14) + 'px';
+          tooltip.style.top  = (event.clientY - rect0.top  + 14) + 'px';
+          const neigh = new Set([d.id]);
+          linksData.forEach(e=>{ if(e.source.id===d.id) neigh.add(e.target.id); if(e.target.id===d.id) neigh.add(e.source.id); });
+          nodes.attr('opacity', n=> neigh.has(n.id)? 1 : 0.2);
+          links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.9 : 0.25);
+        })
+        .on('mousemove', (event)=>{
+          const rect = svg.node().getBoundingClientRect();
+          tooltip.style.left = (event.clientX - rect.left + 14) + 'px';
+          tooltip.style.top  = (event.clientY - rect.top  + 14) + 'px';
+        })
+        .on('mouseout', ()=>{ tooltip.style.display = 'none'; nodes.attr('opacity', 1); links.attr('stroke-opacity', 0.6); })
+        .on('click', (e,d)=> { if(d.url) window.open(d.url, '_blank'); })
+        .call(drag(sim));
+
+      sim.on('tick', ()=>{
+        links.attr('x1', d=>d.source.x).attr('y1', d=>d.source.y)
+             .attr('x2', d=>d.target.x).attr('y2', d=>d.target.y);
+        nodes.attr('cx', d=>d.x).attr('cy', d=>d.y);
+      });
+    })();
+  </script>
+</body>
+</html>
