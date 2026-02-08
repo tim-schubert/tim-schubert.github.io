@@ -34,15 +34,12 @@
     * { box-sizing: border-box; }
     html {
       scroll-behavior: smooth;
-      scroll-snap-type: y proximity;
     }
     html, body { margin: 0; padding: 0; font-family: 'Rubik', system-ui, sans-serif; }
 
     /* ----- Hero ----- */
     .hero {
       min-height: 100vh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
       background: var(--bg-black);
       color: var(--text-on-dark);
       display: flex;
@@ -134,8 +131,6 @@
     /* ----- Section common ----- */
     section {
       min-height: 100vh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -377,9 +372,11 @@
       position: relative;
       overflow: hidden;
       margin-bottom: 0.75rem;
-      touch-action: none;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
-    #graphsvg { width: 100%; height: 320px; display: block; overflow: hidden; touch-action: none; }
+    #graphsvg { width: 100%; height: 320px; display: block; overflow: hidden; touch-action: manipulation; }
     @media (max-width: 820px) { #graphsvg { height: 220px; } }
     .paper-tooltip {
       position: fixed;
@@ -395,6 +392,15 @@
       border: 1px solid rgba(0,0,0,0.06);
       font-size: 0.85rem;
       line-height: 1.4;
+    }
+    @media (max-width: 820px) {
+      .paper-tooltip {
+        max-width: 260px;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.8rem;
+      }
+      .paper-tooltip .tooltip-title { font-size: 0.9em; }
+      .paper-tooltip .tooltip-hint { font-size: 0.7rem; }
     }
     .paper-tooltip .tooltip-theme {
       font-size: 0.7rem;
@@ -719,7 +725,8 @@
           tooltipEl.style.left = '50%';
           tooltipEl.style.top = '50%';
           tooltipEl.style.transform = 'translate(-50%, -50%)';
-          tooltipEl.style.minWidth = 'min(320px, calc(100vw - 2rem))';
+          tooltipEl.style.maxWidth = 'min(260px, calc(100vw - 2rem))';
+          tooltipEl.style.minWidth = '';
         } else {
           tooltipEl.style.transform = '';
           tooltipEl.style.minWidth = '';
@@ -832,9 +839,17 @@
       function drag(sim){
         function dragstarted(event, d){ isDragging = true; dragStart = { x: event.x, y: event.y }; hideTooltip(); hullG.attr('opacity', 0); if(!event.active) sim.alphaTarget(0.15).restart(); d.fx = d.x; d.fy = d.y; }
         function dragged(event, d){
-          const pt = toSvgCoords(event.sourceEvent.clientX, event.sourceEvent.clientY);
-          d.fx = Math.max(pad, Math.min(width - pad, pt.x));
-          d.fy = Math.max(pad, Math.min(height - pad, pt.y));
+          const e = event.sourceEvent;
+          let x = event.x, y = event.y;
+          if (e?.touches?.[0]) {
+            const pt = toSvgCoords(e.touches[0].clientX, e.touches[0].clientY);
+            x = pt.x; y = pt.y;
+          } else if (e?.clientX != null) {
+            const pt = toSvgCoords(e.clientX, e.clientY);
+            x = pt.x; y = pt.y;
+          }
+          d.fx = Math.max(pad, Math.min(width - pad, x));
+          d.fy = Math.max(pad, Math.min(height - pad, y));
         }
         function dragended(event, d){
           isDragging = false;
