@@ -32,12 +32,17 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y proximity;
+    }
     html, body { margin: 0; padding: 0; font-family: 'Rubik', system-ui, sans-serif; }
 
     /* ----- Hero ----- */
     .hero {
       min-height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
       background: var(--bg-black);
       color: var(--text-on-dark);
       display: flex;
@@ -114,7 +119,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 0.5rem;
-      margin: 1.25rem 0 0;
+      margin: 0 0 1.25rem;
       padding: 0 1rem;
     }
     .chip {
@@ -129,6 +134,8 @@
     /* ----- Section common ----- */
     section {
       min-height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -163,6 +170,21 @@
       line-height: 1.65;
       color: var(--text-light);
     }
+    #about .btn-message {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      padding: 0.6rem 1.1rem;
+      background: var(--bg-black);
+      color: var(--text-on-dark);
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    #about .btn-message:hover { opacity: 0.9; transform: translateY(-1px); }
     /* ----- Projects (Currently working on) ----- */
     #now ul {
       list-style: none;
@@ -355,6 +377,7 @@
     .paper-tooltip {
       position: fixed;
       pointer-events: none;
+      cursor: pointer;
       background: #fff;
       border-radius: 12px;
       padding: 0.75rem 1rem;
@@ -429,15 +452,16 @@
   <section id="about" class="light">
     <div class="section-inner">
       <h2>About</h2>
-      <p>I am deeply interested in people, life, and the world. My goal is to understand the brain and genes through science while making a positive impact in healthcare. I have research experience in neuroscience, genetics, machine learning, and computational biology across wet and dry lab techniques. My studies and research have brought me to many inspiring places with lovely people, including Heidelberg, Cambridge, Harvard, and MIT.</p>
-      <p>Outside of academia, I enjoy meaningful conversations, making artisanal coffee, playing the piano, working out, skiing, surfing, sailing, and podcasting.</p>
-      <p>Please reach out, I'm happy to connect!</p>
       <div class="chips-float">
         <span class="chip">Neuroscience</span>
         <span class="chip">Genomics</span>
         <span class="chip">Machine Learning</span>
         <span class="chip">Computational Biology</span>
       </div>
+      <p>I am deeply interested in people, life, and the world. My goal is to understand the brain and genes through science while making a positive impact in healthcare. I have research experience in neuroscience, genetics, machine learning, and computational biology across wet and dry lab techniques. My studies and research have brought me to many inspiring places with lovely people, including Heidelberg, Cambridge, Harvard, and MIT.</p>
+      <p>Outside of academia, I enjoy meaningful conversations, making artisanal coffee, playing the piano, working out, skiing, surfing, sailing, and podcasting.</p>
+      <p>Please reach out, I'm happy to connect!</p>
+      <a class="btn-message" href="mailto:tim.schubert.public@gmail.com" aria-label="Send email">Send me a message</a>
     </div>
     <a href="#research" class="section-arrow" aria-label="Go to research" style="color: var(--text-light);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
@@ -663,18 +687,30 @@
       const nodeG = g.append('g').attr('class', 'nodes');
       const tooltipEl = document.getElementById('paper-tooltip');
       let isDragging = false;
+      let dragStart = null;
 
+      const isMobile = () => window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 820;
       function showTooltip(event, d) {
         const label = themeLabels[d.theme] || d.theme;
         const title = (d.title || 'Paper').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        tooltipEl.innerHTML = '<div class="tooltip-theme">' + label + '</div><div class="tooltip-title">' + title + '</div><div class="tooltip-hint">Click to open</div>';
+        tooltipEl.innerHTML = '<div class="tooltip-theme">' + label + '</div><div class="tooltip-title">' + title + '</div><div class="tooltip-hint">' + (isMobile() ? 'Tap to open' : 'Click to open') + '</div>';
         tooltipEl.style.display = 'block';
-        tooltipEl.style.left = (event.clientX + 16) + 'px';
-
-        tooltipEl.style.top = (event.clientY + 12) + 'px';
-        const r = tooltipEl.getBoundingClientRect();
-        if (r.right > window.innerWidth) tooltipEl.style.left = (event.clientX - r.width - 8) + 'px';
-        if (r.bottom > window.innerHeight) tooltipEl.style.top = (event.clientY - r.height - 8) + 'px';
+        tooltipEl.style.pointerEvents = 'auto';
+        tooltipEl.dataset.url = d.url || '';
+        if (isMobile()) {
+          tooltipEl.style.left = '50%';
+          tooltipEl.style.top = '50%';
+          tooltipEl.style.transform = 'translate(-50%, -50%)';
+          tooltipEl.style.minWidth = 'min(320px, calc(100vw - 2rem))';
+        } else {
+          tooltipEl.style.transform = '';
+          tooltipEl.style.minWidth = '';
+          tooltipEl.style.left = (event.clientX + 16) + 'px';
+          tooltipEl.style.top = (event.clientY + 12) + 'px';
+          const r = tooltipEl.getBoundingClientRect();
+          if (r.right > window.innerWidth) tooltipEl.style.left = (event.clientX - r.width - 8) + 'px';
+          if (r.bottom > window.innerHeight) tooltipEl.style.top = (event.clientY - r.height - 8) + 'px';
+        }
       }
       function moveTooltip(event) {
         tooltipEl.style.left = (event.clientX + 16) + 'px';
@@ -683,7 +719,35 @@
         if (r.right > window.innerWidth) tooltipEl.style.left = (event.clientX - r.width - 8) + 'px';
         if (r.bottom > window.innerHeight) tooltipEl.style.top = (event.clientY - r.height - 8) + 'px';
       }
-      function hideTooltip() { tooltipEl.style.display = 'none'; tooltipEl.innerHTML = ''; }
+      let hideTooltipTimer = null;
+      function hideTooltip(delay = 0) {
+        if (delay) {
+          clearTimeout(hideTooltipTimer);
+          hideTooltipTimer = setTimeout(() => {
+            tooltipEl.style.display = 'none';
+            tooltipEl.style.pointerEvents = 'none';
+            tooltipEl.innerHTML = '';
+          }, delay);
+        } else {
+          clearTimeout(hideTooltipTimer);
+          tooltipEl.style.display = 'none';
+          tooltipEl.style.pointerEvents = 'none';
+          tooltipEl.innerHTML = '';
+        }
+      }
+      tooltipEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const url = tooltipEl.dataset.url;
+        if (url) {
+          window.open(url, '_blank');
+          hideTooltip();
+          if (typeof window.__armedNode !== 'undefined') window.__armedNode = null;
+          nodes.attr('opacity', 1).attr('stroke-width', 2);
+          links.attr('stroke-opacity', 0.35);
+        }
+      });
+      tooltipEl.addEventListener('mouseenter', () => clearTimeout(hideTooltipTimer));
+      tooltipEl.addEventListener('mouseleave', () => hideTooltip(150));
 
       const sim = d3.forceSimulation(nodesData)
         .force('link', d3.forceLink(linksData).id(d=>d.id).distance(100).strength(0.3))
@@ -748,13 +812,21 @@
         return pt.matrixTransform(svgEl.getScreenCTM().inverse());
       }
       function drag(sim){
-        function dragstarted(event, d){ isDragging = true; hideTooltip(); hullG.attr('opacity', 0); if(!event.active) sim.alphaTarget(0.15).restart(); d.fx = d.x; d.fy = d.y; }
+        function dragstarted(event, d){ isDragging = true; dragStart = { x: event.x, y: event.y }; hideTooltip(); hullG.attr('opacity', 0); if(!event.active) sim.alphaTarget(0.15).restart(); d.fx = d.x; d.fy = d.y; }
         function dragged(event, d){
           const pt = toSvgCoords(event.sourceEvent.clientX, event.sourceEvent.clientY);
           d.fx = Math.max(pad, Math.min(width - pad, pt.x));
           d.fy = Math.max(pad, Math.min(height - pad, pt.y));
         }
-        function dragended(event, d){ isDragging = false; hullG.attr('opacity', 1); if(!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }
+        function dragended(event, d){
+          isDragging = false;
+          const dist = dragStart ? Math.hypot(event.x - dragStart.x, event.y - dragStart.y) : 0;
+          dragStart = null;
+          hullG.attr('opacity', 1);
+          if(!event.active) sim.alphaTarget(0);
+          d.fx = null; d.fy = null;
+          if (dist < 8 && d.url) window.open(d.url, '_blank');
+        }
         return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
       }
 
@@ -777,7 +849,7 @@
         })
         .on('mousemove', (event)=>{ if (!isDragging) moveTooltip(event); })
         .on('mouseout', ()=>{
-          hideTooltip();
+          hideTooltip(150);
           nodes.attr('opacity', 1).attr('stroke-width', 2);
           links.attr('stroke-opacity', 0.35);
         })
