@@ -34,14 +34,12 @@
     * { box-sizing: border-box; }
     html {
       scroll-behavior: smooth;
-      scroll-snap-type: y proximity;
     }
     html, body { margin: 0; padding: 0; font-family: 'Rubik', system-ui, sans-serif; }
 
     /* ----- Hero ----- */
     .hero {
       min-height: 100vh;
-      scroll-snap-align: start;
       background: var(--bg-black);
       color: var(--text-on-dark);
       display: flex;
@@ -133,7 +131,6 @@
     /* ----- Section common ----- */
     section {
       min-height: 100vh;
-      scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -938,6 +935,47 @@
         nodes.attr('cx', d=>d.x).attr('cy', d=>d.y);
         if (!isDragging) drawHulls();
       });
+    })();
+  </script>
+
+  <script>
+    (function(){
+      // Custom scroll-snap: only when pretty close to a section, with smooth animation
+      const THRESHOLD = 0.22;  // snap only when within 22% of viewport height of a section
+      const SNAP_TARGETS = () => Array.from(document.querySelectorAll('.hero, section[id]'));
+      let scrollEndTimer = null;
+
+      function trySnap() {
+        const targets = SNAP_TARGETS();
+        if (!targets.length) return;
+        const pad = Math.round(window.innerHeight * THRESHOLD);
+
+        let best = null;
+        let bestDist = Infinity;
+        for (const el of targets) {
+          const dist = Math.abs(el.getBoundingClientRect().top);
+          if (dist <= pad && dist < bestDist) {
+            bestDist = dist;
+            best = el;
+          }
+        }
+        if (best) {
+          best.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      function onScrollEnd() {
+        scrollEndTimer = null;
+        trySnap();
+      }
+
+      window.addEventListener('scroll', () => {
+        if (scrollEndTimer) clearTimeout(scrollEndTimer);
+        scrollEndTimer = setTimeout(onScrollEnd, 120);
+      }, { passive: true });
+      if ('onscrollend' in window) {
+        window.addEventListener('scrollend', onScrollEnd, { passive: true });
+      }
     })();
   </script>
 
