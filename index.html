@@ -338,7 +338,8 @@
       max-width: 220px;
     }
     .theme-questions p:last-child { margin-bottom: 0; }
-    .theme-dot-wrap:hover .theme-questions {
+    .theme-dot-wrap:hover .theme-questions,
+    .theme-dot-wrap.open .theme-questions {
       transform: translateX(-50%) scale(1);
       opacity: 1;
       visibility: visible;
@@ -348,7 +349,8 @@
       bottom: auto;
       transform-origin: 50% 0%;
     }
-    .theme-dot-wrap:hover .theme-questions.flip-below {
+    .theme-dot-wrap:hover .theme-questions.flip-below,
+    .theme-dot-wrap.open .theme-questions.flip-below {
       transform: translateX(-50%) scale(1);
     }
     @media (max-width: 768px) {
@@ -363,8 +365,12 @@
         transform-origin: 50% 50%;
         z-index: 20;
       }
-      .theme-dot-wrap:hover .theme-questions {
+      .theme-dot-wrap:hover .theme-questions,
+      .theme-dot-wrap.open .theme-questions {
         transform: translate(-50%, -50%) scale(1);
+      }
+      .theme-dot-wrap.open .theme-questions {
+        pointer-events: auto;
       }
     }
     .graphCard {
@@ -592,12 +598,14 @@
       type();
     })();
 
-    // Theme question bubbles: flip below on desktop when they would overflow the top
+    // Theme question bubbles: flip below on desktop when they would overflow the top; tap to open on mobile
     (function(){
       const BUBBLE_H = 260;
       const PAD = 16;
-      const isMobile = () => window.innerWidth <= 768;
-      document.querySelectorAll('.theme-dot-wrap').forEach(wrap => {
+      const isMobile = () => window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 768;
+      const wraps = document.querySelectorAll('.theme-dot-wrap');
+      function closeAll() { wraps.forEach(w => w.classList.remove('open')); }
+      wraps.forEach(wrap => {
         const bubble = wrap.querySelector('.theme-questions');
         if (!bubble) return;
         wrap.addEventListener('mouseenter', () => {
@@ -605,7 +613,16 @@
           const r = wrap.getBoundingClientRect();
           bubble.classList.toggle('flip-below', r.top < BUBBLE_H + PAD);
         });
+        wrap.addEventListener('click', (e) => {
+          if (!isMobile()) return;
+          e.stopPropagation();
+          const wasOpen = wrap.classList.contains('open');
+          closeAll();
+          if (!wasOpen) wrap.classList.add('open');
+        });
+        bubble.addEventListener('click', (e) => e.stopPropagation());
       });
+      document.addEventListener('click', () => { if (isMobile()) closeAll(); });
     })();
 
     // Research graph: unified blue palette (matches 1.–3. topic cards)
