@@ -21,14 +21,14 @@
       --deg: #10b981;
       --ml: #f59e0b;
       --edge: #0a0a0a;
-      /* Research: unified blue palette (cards + graph) */
-      --theme-1: #7dd3fc;
-      --theme-2: #0ea5e9;
-      --theme-3: #0369a1;
-      --theme-1-tint: rgba(125, 211, 252, 0.18);
-      --theme-2-tint: rgba(14, 165, 233, 0.18);
-      --theme-3-tint: rgba(3, 105, 161, 0.25);
-      --graph-edge: rgba(148, 163, 184, 0.5);
+      /* Research: cool mint & lavender */
+      --theme-1: #a5f3fc;
+      --theme-2: #93c5fd;
+      --theme-3: #c4b5fd;
+      --theme-1-tint: rgba(165, 243, 252, 0.22);
+      --theme-2-tint: rgba(147, 197, 253, 0.22);
+      --theme-3-tint: rgba(196, 181, 253, 0.2);
+      --graph-edge: rgba(148, 163, 184, 0.7);
     }
 
     * { box-sizing: border-box; }
@@ -70,7 +70,7 @@
       display: inline-block;
       width: 2px;
       height: 1.1em;
-      background: currentColor;
+      background: var(--theme-2);
       margin-left: 2px;
       vertical-align: text-bottom;
       animation: blink 0.8s step-end infinite;
@@ -295,9 +295,9 @@
       transform: scale(1.08);
       box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
     }
-    .theme-item:nth-child(1) .theme-dot { background: var(--theme-1); color: rgba(0,0,0,0.65); }
-    .theme-item:nth-child(2) .theme-dot { background: var(--theme-2); color: rgba(255,255,255,0.95); }
-    .theme-item:nth-child(3) .theme-dot { background: var(--theme-3); color: rgba(255,255,255,0.95); }
+    .theme-item:nth-child(1) .theme-dot { background: var(--theme-1); color: rgba(0,0,0,0.7); }
+    .theme-item:nth-child(2) .theme-dot { background: var(--theme-2); color: rgba(0,0,0,0.75); }
+    .theme-item:nth-child(3) .theme-dot { background: var(--theme-3); color: rgba(0,0,0,0.7); }
     .theme-name {
       font-size: 0.9rem;
       font-weight: 500;
@@ -328,6 +328,9 @@
       transition: transform 0.25s ease-out, opacity 0.2s, visibility 0.2s;
       z-index: 5;
     }
+    .theme-item:nth-child(1) .theme-questions { background: color-mix(in srgb, var(--theme-1) 20%, rgba(0,0,0,0.92)); }
+    .theme-item:nth-child(2) .theme-questions { background: color-mix(in srgb, var(--theme-2) 20%, rgba(0,0,0,0.92)); }
+    .theme-item:nth-child(3) .theme-questions { background: color-mix(in srgb, var(--theme-3) 20%, rgba(0,0,0,0.92)); }
     .theme-questions p {
       margin: 0 0 0.5em;
       max-width: 220px;
@@ -382,14 +385,14 @@
       position: fixed;
       pointer-events: none;
       cursor: pointer;
-      background: #fff;
+      background: rgba(26, 32, 44, 0.97);
       border-radius: 12px;
       padding: 0.75rem 1rem;
       max-width: 320px;
       z-index: 10;
       display: none;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
-      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
       font-size: 0.85rem;
       line-height: 1.4;
     }
@@ -407,17 +410,17 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--muted);
+      color: rgba(255,255,255,0.6);
       margin-bottom: 0.35rem;
     }
     .paper-tooltip .tooltip-title {
       font-weight: 500;
-      color: var(--text-light);
+      color: rgba(255,255,255,0.95);
       margin: 0;
     }
     .paper-tooltip .tooltip-hint {
       font-size: 0.75rem;
-      color: var(--muted);
+      color: rgba(255,255,255,0.55);
       margin-top: 0.5rem;
     }
     #research .graph-caption {
@@ -715,49 +718,73 @@
 
       const isMobile = () => window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 820;
       function showTooltip(event, d) {
+        clearTimeout(hideTooltipTimer);
+        hideTooltipTimer = null;
         const label = themeLabels[d.theme] || d.theme;
         const title = (d.title || 'Paper').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         tooltipEl.innerHTML = '<div class="tooltip-theme">' + label + '</div><div class="tooltip-title">' + title + '</div><div class="tooltip-hint">' + (isMobile() ? 'Tap to open' : 'Click to open') + '</div>';
         tooltipEl.style.display = 'block';
         tooltipEl.style.pointerEvents = 'auto';
         tooltipEl.dataset.url = d.url || '';
+        tooltipEl.style.transform = 'none';
+        const GAP = 16;
+        const PAD = 16;
+        tooltipEl.style.left = '-9999px';
+        tooltipEl.style.top = '0';
+        void tooltipEl.offsetHeight;
+        const tr = tooltipEl.getBoundingClientRect();
         if (isMobile()) {
-          tooltipEl.style.left = '50%';
-          tooltipEl.style.top = '50%';
-          tooltipEl.style.transform = 'translate(-50%, -50%)';
-          tooltipEl.style.maxWidth = 'min(260px, calc(100vw - 2rem))';
-          tooltipEl.style.minWidth = '';
+          const circleEl = nodeG.selectAll('circle').filter(n => n.id === d.id).node();
+          if (!circleEl) { hideTooltip(); return; }
+          const nodeRect = circleEl.getBoundingClientRect();
+          const nx = nodeRect.left + nodeRect.width / 2;
+          const ny = nodeRect.top + nodeRect.height / 2;
+          const spaceAbove = ny - PAD;
+          const spaceBelow = window.innerHeight - ny - PAD;
+          const fitsAbove = spaceAbove >= tr.height + GAP;
+          const fitsBelow = spaceBelow >= tr.height + GAP;
+          let x = nx - tr.width / 2;
+          let y = fitsAbove ? ny - tr.height - GAP : (fitsBelow ? ny + GAP : (window.innerHeight - tr.height - PAD) / 2);
+          x = Math.max(PAD, Math.min(x, window.innerWidth - tr.width - PAD));
+          tooltipEl.style.left = x + 'px';
+          tooltipEl.style.top = y + 'px';
         } else {
-          tooltipEl.style.transform = '';
-          tooltipEl.style.minWidth = '';
-          tooltipEl.style.left = (event.clientX + 16) + 'px';
-          tooltipEl.style.top = (event.clientY + 12) + 'px';
-          const r = tooltipEl.getBoundingClientRect();
-          if (r.right > window.innerWidth) tooltipEl.style.left = (event.clientX - r.width - 8) + 'px';
-          if (r.bottom > window.innerHeight) tooltipEl.style.top = (event.clientY - r.height - 8) + 'px';
+          let x = event.clientX + GAP;
+          let y = event.clientY + GAP;
+          if (x + tr.width > window.innerWidth - PAD) x = event.clientX - tr.width - GAP;
+          if (y + tr.height > window.innerHeight - PAD) y = event.clientY - tr.height - GAP;
+          if (x < PAD) x = PAD;
+          if (y < PAD) y = PAD;
+          tooltipEl.style.left = x + 'px';
+          tooltipEl.style.top = y + 'px';
         }
       }
       function moveTooltip(event) {
-        tooltipEl.style.left = (event.clientX + 16) + 'px';
-        tooltipEl.style.top = (event.clientY + 12) + 'px';
+        const GAP = 16;
+        const PAD = 16;
+        let x = event.clientX + GAP;
+        let y = event.clientY + GAP;
         const r = tooltipEl.getBoundingClientRect();
-        if (r.right > window.innerWidth) tooltipEl.style.left = (event.clientX - r.width - 8) + 'px';
-        if (r.bottom > window.innerHeight) tooltipEl.style.top = (event.clientY - r.height - 8) + 'px';
+        if (x + r.width > window.innerWidth - PAD) x = event.clientX - r.width - GAP;
+        if (y + r.height > window.innerHeight - PAD) y = event.clientY - r.height - GAP;
+        if (x < PAD) x = PAD;
+        if (y < PAD) y = PAD;
+        tooltipEl.style.left = x + 'px';
+        tooltipEl.style.top = y + 'px';
       }
       let hideTooltipTimer = null;
       function hideTooltip(delay = 0) {
-        if (delay) {
-          clearTimeout(hideTooltipTimer);
-          hideTooltipTimer = setTimeout(() => {
-            tooltipEl.style.display = 'none';
-            tooltipEl.style.pointerEvents = 'none';
-            tooltipEl.innerHTML = '';
-          }, delay);
-        } else {
-          clearTimeout(hideTooltipTimer);
+        const doHide = () => {
           tooltipEl.style.display = 'none';
           tooltipEl.style.pointerEvents = 'none';
           tooltipEl.innerHTML = '';
+        };
+        if (delay) {
+          clearTimeout(hideTooltipTimer);
+          hideTooltipTimer = setTimeout(doHide, delay);
+        } else {
+          clearTimeout(hideTooltipTimer);
+          doHide();
         }
       }
       tooltipEl.addEventListener('click', (e) => {
@@ -765,10 +792,11 @@
         const url = tooltipEl.dataset.url;
         if (url) {
           window.open(url, '_blank');
+          
           hideTooltip();
           if (typeof window.__armedNode !== 'undefined') window.__armedNode = null;
           nodes.attr('opacity', 1).attr('stroke-width', 2);
-          links.attr('stroke-opacity', 0.35);
+          links.attr('stroke-opacity', 0.55);
         }
       });
       tooltipEl.addEventListener('mouseenter', () => clearTimeout(hideTooltipTimer));
@@ -806,7 +834,7 @@
         .attr('d', linkPath)
         .attr('fill', 'none')
         .attr('stroke', graphEdgeColor)
-        .attr('stroke-opacity', 0.35)
+        .attr('stroke-opacity', 0.55)
         .attr('stroke-width', d=> 0.8 + Math.min(1.5, (d.weight||1) * 0.4))
         .attr('stroke-linecap', 'round');
 
@@ -821,9 +849,9 @@
           hullG.append('path')
             .attr('d', 'M' + hull.join('L') + 'Z')
             .attr('fill', color)
-            .attr('fill-opacity', 0.12)
+            .attr('fill-opacity', 0.2)
             .attr('stroke', color)
-            .attr('stroke-opacity', 0.22)
+            .attr('stroke-opacity', 0.4)
             .attr('stroke-width', 1);
         });
       }
@@ -837,7 +865,12 @@
         return pt.matrixTransform(svgEl.getScreenCTM().inverse());
       }
       function drag(sim){
-        function dragstarted(event, d){ isDragging = true; dragStart = { x: event.x, y: event.y }; hideTooltip(); hullG.attr('opacity', 0); if(!event.active) sim.alphaTarget(0.15).restart(); d.fx = d.x; d.fy = d.y; }
+        function dragstarted(event, d){ isDragging = true; dragStart = { x: event.x, y: event.y }; hideTooltip(); hullG.attr('opacity', 0); if(!event.active) sim.alphaTarget(0.15).restart(); d.fx = d.x; d.fy = d.y;
+          const neigh = new Set([d.id]);
+          linksData.forEach(e=>{ if(e.source.id===d.id) neigh.add(e.target.id); if(e.target.id===d.id) neigh.add(e.source.id); });
+          nodes.attr('opacity', n=> neigh.has(n.id)? 1 : 0.25).attr('stroke-width', n=> neigh.has(n.id)? 2 : 0.5);
+          links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.85 : 0.25);
+        }
         function dragged(event, d){
           const e = event.sourceEvent;
           let x = event.x, y = event.y;
@@ -872,10 +905,13 @@
               const neigh = new Set([d.id]);
               linksData.forEach(e=>{ if(e.source.id===d.id) neigh.add(e.target.id); if(e.target.id===d.id) neigh.add(e.source.id); });
               nodes.attr('opacity', n=> neigh.has(n.id)? 1 : 0.25).attr('stroke-width', n=> neigh.has(n.id)? 2 : 0.5);
-              links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.7 : 0.12);
+              links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.85 : 0.25);
             }
           } else if (dist < 8 && !mobile && d.url) {
             window.open(d.url, '_blank');
+          } else if (dist >= 8) {
+            nodes.attr('opacity', 1).attr('stroke-width', 2);
+            links.attr('stroke-opacity', 0.55);
           }
         }
         return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
@@ -896,13 +932,14 @@
           const neigh = new Set([d.id]);
           linksData.forEach(e=>{ if(e.source.id===d.id) neigh.add(e.target.id); if(e.target.id===d.id) neigh.add(e.source.id); });
           nodes.attr('opacity', n=> neigh.has(n.id)? 1 : 0.25).attr('stroke-width', n=> neigh.has(n.id)? 2 : 0.5);
-          links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.7 : 0.12);
+          links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.85 : 0.25);
         })
         .on('mousemove', (event)=>{ if (!isDragging) moveTooltip(event); })
         .on('mouseout', ()=>{
+          if (isDragging) return;
           hideTooltip(150);
           nodes.attr('opacity', 1).attr('stroke-width', 2);
-          links.attr('stroke-opacity', 0.35);
+          links.attr('stroke-opacity', 0.55);
         })
         .on('click', (event, d)=>{
           const isMobile = window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 820;
@@ -914,7 +951,7 @@
           const neigh = new Set([d.id]);
           linksData.forEach(e=>{ if(e.source.id===d.id) neigh.add(e.target.id); if(e.target.id===d.id) neigh.add(e.source.id); });
           nodes.attr('opacity', n=> neigh.has(n.id)? 1 : 0.25).attr('stroke-width', n=> neigh.has(n.id)? 2 : 0.5);
-          links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.7 : 0.12);
+          links.attr('stroke-opacity', e=> (e.source.id===d.id || e.target.id===d.id)? 0.85 : 0.25);
           event.stopPropagation();
         })
         .call(drag(sim));
@@ -926,56 +963,15 @@
         window.__armedNode = null;
         hideTooltip();
         nodes.attr('opacity', 1).attr('stroke-width', 2);
-        links.attr('stroke-opacity', 0.35);
+        links.attr('stroke-opacity', 0.55);
       });
-      window.addEventListener('resize', ()=>{ hideTooltip(); window.__armedNode = null; nodes.attr('opacity', 1).attr('stroke-width', 2); links.attr('stroke-opacity', 0.35); });
+      window.addEventListener('resize', ()=>{ hideTooltip(); window.__armedNode = null; nodes.attr('opacity', 1).attr('stroke-width', 2); links.attr('stroke-opacity', 0.55); });
 
       sim.on('tick', ()=>{
         links.attr('d', linkPath);
         nodes.attr('cx', d=>d.x).attr('cy', d=>d.y);
         if (!isDragging) drawHulls();
       });
-    })();
-  </script>
-
-  <script>
-    (function(){
-      // Custom scroll-snap: only when pretty close to a section, with smooth animation
-      const THRESHOLD = 0.22;  // snap only when within 22% of viewport height of a section
-      const SNAP_TARGETS = () => Array.from(document.querySelectorAll('.hero, section[id]'));
-      let scrollEndTimer = null;
-
-      function trySnap() {
-        const targets = SNAP_TARGETS();
-        if (!targets.length) return;
-        const pad = Math.round(window.innerHeight * THRESHOLD);
-
-        let best = null;
-        let bestDist = Infinity;
-        for (const el of targets) {
-          const dist = Math.abs(el.getBoundingClientRect().top);
-          if (dist <= pad && dist < bestDist) {
-            bestDist = dist;
-            best = el;
-          }
-        }
-        if (best) {
-          best.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }
-
-      function onScrollEnd() {
-        scrollEndTimer = null;
-        trySnap();
-      }
-
-      window.addEventListener('scroll', () => {
-        if (scrollEndTimer) clearTimeout(scrollEndTimer);
-        scrollEndTimer = setTimeout(onScrollEnd, 120);
-      }, { passive: true });
-      if ('onscrollend' in window) {
-        window.addEventListener('scrollend', onScrollEnd, { passive: true });
-      }
     })();
   </script>
 
