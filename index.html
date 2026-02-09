@@ -104,6 +104,7 @@
     }
     .section-arrow:hover { opacity: 1; transform: translateX(-50%) translateY(4px); }
     .section-arrow svg { width: 28px; height: 28px; display: block; }
+    #now .section-arrow { color: #333; }
     .hero-arrow.arrow-bounce { animation: arrow-bounce 0.6s ease-out; }
     @keyframes arrow-bounce {
       0%, 100% { transform: translateX(-50%) translateY(0); }
@@ -165,20 +166,20 @@
       line-height: 1.65;
       color: var(--text-light);
     }
+    #about .section-inner > p:last-of-type { margin-bottom: 0.35rem; }
     #about .btn-message {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      margin-top: 1.25rem;
-      padding: 0.6rem 1.1rem;
-      background: var(--bg-black);
-      color: var(--text-on-dark);
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      justify-content: center;
+      margin-top: 0;
+      padding: 0.6rem;
+      background: none;
+      color: #000;
+      border-radius: 0;
       text-decoration: none;
       transition: opacity 0.2s, transform 0.2s;
     }
+    #about .btn-message svg { width: 22px; height: 22px; }
     #about .btn-message:hover { opacity: 0.9; transform: translateY(-1px); }
     /* ----- Projects (Currently working on) ----- */
     #now ul {
@@ -484,7 +485,9 @@
       <p>I am deeply interested in people, life, and the world. My goal is to understand the brain and genes through science while making a positive impact in healthcare. I have research experience in neuroscience, genetics, machine learning, and computational biology across wet and dry lab techniques. My studies and research have brought me to many inspiring places with lovely people, including Heidelberg, Cambridge, Harvard, and MIT.</p>
       <p>Outside of academia, I enjoy meaningful conversations, making artisanal coffee, playing the piano, working out, skiing, surfing, sailing, and podcasting.</p>
       <p>Please reach out, I'm happy to connect!</p>
-      <a class="btn-message" href="mailto:tim.schubert.public@gmail.com" aria-label="Send email">Send me a message</a>
+      <a class="btn-message" href="mailto:tim.schubert.public@gmail.com" aria-label="Send email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M22 7l-10 7L2 7"/></svg>
+      </a>
     </div>
     <a href="#research" class="section-arrow" aria-label="Go to research" style="color: var(--text-light);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
