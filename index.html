@@ -617,12 +617,22 @@
       const wraps = document.querySelectorAll('.theme-dot-wrap');
       function closeAll() { wraps.forEach(w => w.classList.remove('open')); }
       let lastScrollY = window.scrollY;
-      window.addEventListener('scroll', () => {
+      let touchStartY = 0;
+      function onScroll() {
         const anyOpen = Array.from(wraps).some(w => w.classList.contains('open'));
         if (anyOpen && Math.abs(window.scrollY - lastScrollY) > SCROLL_THRESHOLD) {
           closeAll();
         }
         lastScrollY = window.scrollY;
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      document.addEventListener('touchstart', (e) => { touchStartY = e.touches[0]?.clientY ?? 0; }, { passive: true });
+      document.addEventListener('touchmove', (e) => {
+        const anyOpen = Array.from(wraps).some(w => w.classList.contains('open'));
+        if (anyOpen && Math.abs((e.touches[0]?.clientY ?? 0) - touchStartY) > SCROLL_THRESHOLD) {
+          closeAll();
+          touchStartY = e.touches[0]?.clientY ?? 0;
+        }
       }, { passive: true });
       wraps.forEach(wrap => {
         const bubble = wrap.querySelector('.theme-questions');
@@ -733,12 +743,13 @@
         const title = (d.title || 'Paper').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         tooltipEl.innerHTML = '<div class="tooltip-theme">' + label + '</div><div class="tooltip-title">' + title + '</div><div class="tooltip-hint">' + (isMobile() ? 'Tap to open' : 'Click to open') + '</div>';
         tooltipEl.style.display = 'block';
+        tooltipEl.style.visibility = 'hidden';
         tooltipEl.style.pointerEvents = 'auto';
         tooltipEl.dataset.url = d.url || '';
         tooltipEl.style.transform = 'none';
         const GAP = 16;
         const PAD = 16;
-        tooltipEl.style.left = '-9999px';
+        tooltipEl.style.left = '0';
         tooltipEl.style.top = '0';
         void tooltipEl.offsetHeight;
         const tr = tooltipEl.getBoundingClientRect();
@@ -767,6 +778,7 @@
           tooltipEl.style.left = x + 'px';
           tooltipEl.style.top = y + 'px';
         }
+        tooltipEl.style.visibility = 'visible';
       }
       function moveTooltip(event) {
         const GAP = 16;
@@ -785,6 +797,7 @@
       function hideTooltip(delay = 0) {
         const doHide = () => {
           tooltipEl.style.display = 'none';
+          tooltipEl.style.visibility = '';
           tooltipEl.style.pointerEvents = 'none';
           tooltipEl.innerHTML = '';
         };
