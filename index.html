@@ -612,9 +612,18 @@
     (function(){
       const BUBBLE_H = 260;
       const PAD = 16;
+      const SCROLL_THRESHOLD = 25;
       const isMobile = () => window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 768;
       const wraps = document.querySelectorAll('.theme-dot-wrap');
       function closeAll() { wraps.forEach(w => w.classList.remove('open')); }
+      let lastScrollY = window.scrollY;
+      window.addEventListener('scroll', () => {
+        const anyOpen = Array.from(wraps).some(w => w.classList.contains('open'));
+        if (anyOpen && Math.abs(window.scrollY - lastScrollY) > SCROLL_THRESHOLD) {
+          closeAll();
+        }
+        lastScrollY = window.scrollY;
+      }, { passive: true });
       wraps.forEach(wrap => {
         const bubble = wrap.querySelector('.theme-questions');
         if (!bubble) return;
@@ -897,8 +906,10 @@
               window.__armedNode = null;
               hideTooltip();
               if (d.url) window.open(d.url, '_blank');
+              window.__justOpenedInDragend = true;
             } else {
               window.__armedNode = d.id;
+              window.__justShowedTooltip = true;
               const ev = event.sourceEvent;
               const te = ev?.touches?.[0] || ev?.changedTouches?.[0] || ev;
               showTooltip({ clientX: te?.clientX ?? 0, clientY: te?.clientY ?? 0 }, d);
@@ -944,6 +955,8 @@
         .on('click', (event, d)=>{
           const isMobile = window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 820;
           if(!isMobile){ if(d.url) window.open(d.url, '_blank'); return; }
+          if (window.__justOpenedInDragend) { window.__justOpenedInDragend = false; return; }
+          if (window.__justShowedTooltip && window.__armedNode === d.id) { window.__justShowedTooltip = false; return; }
           window.__armedNode = window.__armedNode || null;
           if(window.__armedNode === d.id){ window.__armedNode = null; hideTooltip(); if(d.url) window.open(d.url, '_blank'); return; }
           window.__armedNode = d.id;
