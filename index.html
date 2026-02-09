@@ -778,7 +778,11 @@
           tooltipEl.style.left = x + 'px';
           tooltipEl.style.top = y + 'px';
         }
-        tooltipEl.style.visibility = 'visible';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (tooltipEl.style.display === 'block') tooltipEl.style.visibility = 'visible';
+          });
+        });
       }
       function moveTooltip(event) {
         const GAP = 16;
