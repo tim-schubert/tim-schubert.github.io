@@ -395,6 +395,13 @@
       border: 1px solid rgba(255,255,255,0.1);
       font-size: 0.85rem;
       line-height: 1.4;
+      opacity: 0;
+      transform: scale(0.97);
+      transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+    }
+    .paper-tooltip.visible {
+      opacity: 1;
+      transform: scale(1);
     }
     @media (max-width: 820px) {
       .paper-tooltip {
@@ -746,7 +753,9 @@
         tooltipEl.style.visibility = 'hidden';
         tooltipEl.style.pointerEvents = 'auto';
         tooltipEl.dataset.url = d.url || '';
-        tooltipEl.style.transform = 'none';
+        tooltipEl.style.opacity = '0';
+        tooltipEl.style.transform = 'scale(0.97)';
+        tooltipEl.classList.remove('visible');
         const GAP = 16;
         const PAD = 16;
         tooltipEl.style.left = '0';
@@ -780,7 +789,12 @@
         }
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            if (tooltipEl.style.display === 'block') tooltipEl.style.visibility = 'visible';
+            if (tooltipEl.style.display === 'block') {
+              tooltipEl.style.visibility = 'visible';
+              tooltipEl.style.opacity = '';
+              tooltipEl.style.transform = '';
+              tooltipEl.classList.add('visible');
+            }
           });
         });
       }
@@ -798,12 +812,20 @@
         tooltipEl.style.top = y + 'px';
       }
       let hideTooltipTimer = null;
+      const FADE_MS = 220;
       function hideTooltip(delay = 0) {
         const doHide = () => {
-          tooltipEl.style.display = 'none';
-          tooltipEl.style.visibility = '';
+          tooltipEl.classList.remove('visible');
           tooltipEl.style.pointerEvents = 'none';
-          tooltipEl.innerHTML = '';
+          clearTimeout(hideTooltipTimer);
+          hideTooltipTimer = setTimeout(() => {
+            tooltipEl.style.display = 'none';
+            tooltipEl.style.visibility = '';
+            tooltipEl.style.opacity = '0';
+            tooltipEl.style.transform = 'scale(0.97)';
+            tooltipEl.innerHTML = '';
+            hideTooltipTimer = null;
+          }, FADE_MS);
         };
         if (delay) {
           clearTimeout(hideTooltipTimer);
